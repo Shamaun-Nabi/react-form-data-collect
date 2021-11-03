@@ -2,29 +2,70 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faReact } from "@fortawesome/free-brands-svg-icons";
 import { FcManager } from "react-icons/fc";
 import { useState } from "react";
-// import { faAd } from "@fortawesome/free-solid-svg-icons";
-// import { fab } from "@fortawesome/free-brands-svg-icons";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+// Firebase
+import { initializeApp } from "firebase/app";
+const firebaseConfig = {
+  apiKey: "AIzaSyBqyPa812IokH0HaWlOmq0zp2HwM21B08Y",
+  authDomain: "trying-auth-20242.firebaseapp.com",
+  projectId: "trying-auth-20242",
+  storageBucket: "trying-auth-20242.appspot.com",
+  messagingSenderId: "367275291523",
+  appId: "1:367275291523:web:0e56d2f814415666c73cb6",
+  measurementId: "G-8M5GF47XP1",
+};
+
+initializeApp(firebaseConfig);
+
+// firebase Config
 
 function App() {
-  const [info, setinfo] = useState({});
-  const [record, setRrcord] = useState({});
-  // const [userRecord, serUserRecord] = useState([]);
+  const [info, setinfo] = useState({
+    name: "",
+    email: "",
+    address: "",
+    password: "",
+    success: "",
+    error: "",
+  });
 
   const handelOnChange = (e) => {
-    const fieldName = e.target.name;
-    const fieldValue = e.target.value;
-    setinfo({ ...info, [fieldName]: fieldValue });
-    // console.log(info);
+    const name = e.target.name;
+    const value = e.target.value;
+    // console.log(name, value);
+    // console.log("info before stattus",info)
+    const newUser = { ...info, [name]: value };
+    // newUser[name] = value;
+    setinfo(newUser);
+    console.log("newuser stattus", info);
   };
 
   const dataSubmit = (e) => {
     e.preventDefault();
-    const userValue = { ...info };
-    setRrcord(userValue);
+    const auth = getAuth();
+    createUserWithEmailAndPassword(auth, info.email, info.password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        // ...
+        const newUser = { ...info };
+        newUser.success = "success";
+        newUser.error = "";
+        setinfo(newUser);
+      })
+      .catch((error) => {
+        const newUser = { ...info };
+        newUser.error = error.message;
+        setinfo(newUser);
 
-    console.log(record.userName);
-    // serUserRecord([...userRecord,recentRecord])
-    // console.log(userRecord);
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorMessage);
+        // ..
+      });
+    console.log(info.email);
+    console.log(info.password);
+    console.log(info.address);
   };
 
   return (
@@ -40,7 +81,7 @@ function App() {
             className="form-control mt-2 "
             required
             onChange={handelOnChange}
-            name="userName"
+            name="name"
           />
           <input
             type="email"
@@ -65,7 +106,7 @@ function App() {
             placeholder="password"
             className="form-control mt-2"
             required
-            name="Confirmpassword"
+            name="password"
             onChange={handelOnChange}
           />
 
@@ -82,9 +123,8 @@ function App() {
       </div>
 
       <div>
-        <p>Name: {record.userName}</p>
-        <p>pass: {record.email}</p>
-        <p>add: {record.address}</p>
+        <p className="text-green-500">{info.success}</p>
+        <p className="text-red-500">{info.error}</p>
       </div>
     </div>
     // Remove this area and start your code
